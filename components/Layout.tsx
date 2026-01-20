@@ -4,13 +4,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, User, Search, Menu, X, Camera, Car, Settings } from 'lucide-react';
 import { geminiService } from '../services/geminiService';
 import { useCart } from '../context/CartContext';
+import CartDrawer from './CartDrawer';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const navigate = useNavigate();
-  const { totalItems } = useCart();
+  const { totalItems, setDrawerOpen } = useCart();
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +73,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <User className="w-5 h-5" />
               <span className="text-[10px] font-medium">Profile</span>
             </Link>
-            <Link to="/cart" className="relative text-slate-600 hover:text-red-600 transition-colors flex flex-col items-center">
+            <button 
+              onClick={() => setDrawerOpen(true)}
+              className="relative text-slate-600 hover:text-red-600 transition-colors flex flex-col items-center cursor-pointer"
+            >
               <ShoppingCart className="w-5 h-5" />
               <span className="text-[10px] font-medium">Cart</span>
               {totalItems > 0 && (
@@ -80,7 +84,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   {totalItems}
                 </span>
               )}
-            </Link>
+            </button>
             <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? <X /> : <Menu />}
             </button>
@@ -104,11 +108,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <Link to="/catalog" className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg"><Search className="w-4 h-4 text-slate-400" /> Catalog</Link>
               <Link to="/garage" className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg"><Car className="w-4 h-4 text-slate-400" /> Garage</Link>
               <Link to="/profile" className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg"><User className="w-4 h-4 text-slate-400" /> Account</Link>
-              <Link to="/cart" className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg relative">
+              <button 
+                onClick={() => { setIsMenuOpen(false); setDrawerOpen(true); }}
+                className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg relative text-left"
+              >
                 <ShoppingCart className="w-4 h-4 text-slate-400" /> 
                 Cart 
                 {totalItems > 0 && <span className="ml-1 text-red-600 font-bold">({totalItems})</span>}
-              </Link>
+              </button>
             </nav>
         </div>
       )}
@@ -116,6 +123,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <main className="flex-1">
         {children}
       </main>
+
+      {/* Side Cart Drawer */}
+      <CartDrawer />
 
       <footer className="bg-slate-900 text-slate-300 py-12 px-4">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">

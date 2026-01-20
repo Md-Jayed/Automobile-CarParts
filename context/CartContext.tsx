@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { Product, CartItem } from '../types';
 
 interface CartContextType {
@@ -10,12 +10,15 @@ interface CartContextType {
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
+  isDrawerOpen: boolean;
+  setDrawerOpen: (open: boolean) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const addToCart = (product: Product, quantity: number = 1) => {
     setCart(prev => {
@@ -27,6 +30,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return [...prev, { ...product, quantity }];
     });
+    // Open the drawer automatically when adding an item
+    setIsDrawerOpen(true);
   };
 
   const removeFromCart = (productId: string) => {
@@ -49,7 +54,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice }}>
+    <CartContext.Provider value={{ 
+      cart, 
+      addToCart, 
+      removeFromCart, 
+      updateQuantity, 
+      clearCart, 
+      totalItems, 
+      totalPrice,
+      isDrawerOpen,
+      setDrawerOpen: setIsDrawerOpen
+    }}>
       {children}
     </CartContext.Provider>
   );
