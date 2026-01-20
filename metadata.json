@@ -1,0 +1,7 @@
+{
+  "name": "AutoPart AI - Pro Car Parts E-commerce",
+  "description": "An advanced AI-powered automotive parts e-commerce platform with smart search, compatibility verification, and a virtual assistant.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
