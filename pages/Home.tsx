@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Camera, ChevronRight, Star, ShieldCheck, Zap, Truck, Package, ShoppingCart, SlidersHorizontal, ArrowRight } from 'lucide-react';
+import { Search, Camera, ChevronRight, Star, ShieldCheck, Zap, Truck, Package, ShoppingCart, SlidersHorizontal, ArrowRight, ImageOff } from 'lucide-react';
 import { CATEGORIES, PRODUCTS, MAKES, SERIES } from '../constants';
 import { geminiService } from '../services/geminiService';
+import { useCart } from '../context/CartContext';
 
 const Home: React.FC = () => {
   const [query, setQuery] = useState('');
@@ -265,44 +266,64 @@ const Home: React.FC = () => {
   );
 };
 
-const ProductCard: React.FC<{ product: any }> = ({ product }) => (
-  <div className="group bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden hover:shadow-2xl transition-all duration-500 flex flex-col">
-    <Link to={`/product/${product.id}`} className="block relative aspect-[4/5] overflow-hidden">
-      <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-      <div className="absolute top-6 left-6 flex flex-col gap-2">
-        <div className="bg-white/90 backdrop-blur rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-900 shadow-sm">
-          {product.brand}
-        </div>
-        {product.isOEM && (
-          <div className="bg-red-600 text-white rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest shadow-sm">
-            OEM
+const ProductCard: React.FC<{ product: any }> = ({ product }) => {
+  const [imgError, setImgError] = useState(false);
+  const { addToCart } = useCart();
+
+  return (
+    <div className="group bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden hover:shadow-2xl transition-all duration-500 flex flex-col">
+      <Link to={`/product/${product.id}`} className="block relative aspect-[4/5] overflow-hidden bg-slate-50">
+        {imgError ? (
+          <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-2">
+            <ImageOff className="w-12 h-12" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Image Unavailable</span>
           </div>
+        ) : (
+          <img 
+            src={product.images[0]} 
+            alt={product.name} 
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+            onError={() => setImgError(true)}
+          />
         )}
-      </div>
-    </Link>
-    <div className="p-8 space-y-4">
-      <div className="flex justify-between items-start">
-        <Link to={`/product/${product.id}`}>
-          <h3 className="font-bold text-slate-900 line-clamp-2 group-hover:text-red-600 transition-colors leading-tight min-h-[3rem]">
-            {product.name}
-          </h3>
-        </Link>
-        <div className="flex items-center gap-1 text-sm font-bold text-slate-700">
-          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /> {product.rating}
+        <div className="absolute top-6 left-6 flex flex-col gap-2">
+          <div className="bg-white/90 backdrop-blur rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-900 shadow-sm">
+            {product.brand}
+          </div>
+          {product.isOEM && (
+            <div className="bg-red-600 text-white rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest shadow-sm">
+              OEM
+            </div>
+          )}
         </div>
-      </div>
-      <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
-        <Package className="w-3 h-3" />
-        <span>PN: {product.partNumber}</span>
-      </div>
-      <div className="flex items-center justify-between pt-4">
-        <span className="text-3xl font-black text-slate-900">${product.price.toFixed(2)}</span>
-        <button className="bg-slate-900 hover:bg-red-600 text-white p-4 rounded-2xl transition-all hover:rotate-12">
-          <ShoppingCart className="w-6 h-6" />
-        </button>
+      </Link>
+      <div className="p-8 space-y-4">
+        <div className="flex justify-between items-start">
+          <Link to={`/product/${product.id}`}>
+            <h3 className="font-bold text-slate-900 line-clamp-2 group-hover:text-red-600 transition-colors leading-tight min-h-[3rem]">
+              {product.name}
+            </h3>
+          </Link>
+          <div className="flex items-center gap-1 text-sm font-bold text-slate-700">
+            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /> {product.rating}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
+          <Package className="w-3 h-3" />
+          <span>PN: {product.partNumber}</span>
+        </div>
+        <div className="flex items-center justify-between pt-4">
+          <span className="text-3xl font-black text-slate-900">${product.price.toFixed(2)}</span>
+          <button 
+            onClick={() => addToCart(product)}
+            className="bg-slate-900 hover:bg-red-600 text-white p-4 rounded-2xl transition-all hover:rotate-12"
+          >
+            <ShoppingCart className="w-6 h-6" />
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default Home;

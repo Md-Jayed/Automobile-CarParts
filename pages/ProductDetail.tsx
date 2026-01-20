@@ -1,19 +1,26 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Star, ShieldCheck, Truck, Package, ShoppingCart, ChevronLeft, Check, AlertCircle, Info, Hammer } from 'lucide-react';
+import { Star, ShieldCheck, Truck, Package, ShoppingCart, ChevronLeft, Check, AlertCircle, Info, Hammer, ImageOff } from 'lucide-react';
 import { PRODUCTS } from '../constants';
 import { Product } from '../types';
+import { useCart } from '../context/CartContext';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'specs' | 'compatibility' | 'reviews'>('specs');
+  const [mainImgError, setMainImgError] = useState(false);
+  const [activeImage, setActiveImage] = useState<string>('');
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const found = PRODUCTS.find(p => p.id === id);
-    if (found) setProduct(found);
+    if (found) {
+      setProduct(found);
+      setActiveImage(found.images[0]);
+    }
   }, [id]);
 
   if (!product) {
@@ -35,14 +42,33 @@ const ProductDetail: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
         {/* Left: Gallery */}
         <div className="space-y-4">
-          <div className="aspect-square rounded-[3rem] overflow-hidden bg-slate-100 border border-slate-200">
-            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+          <div className="aspect-square rounded-[3rem] overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center">
+            {mainImgError ? (
+              <div className="flex flex-col items-center gap-2 text-slate-300">
+                <ImageOff className="w-16 h-16" />
+                <span className="font-bold uppercase tracking-widest text-xs">Image Unavailable</span>
+              </div>
+            ) : (
+              <img 
+                src={activeImage || product.images[0]} 
+                alt={product.name} 
+                className="w-full h-full object-cover transition-all duration-300" 
+                onError={() => setMainImgError(true)}
+              />
+            )}
           </div>
           <div className="grid grid-cols-4 gap-4">
             {product.images.map((img, i) => (
-              <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 cursor-pointer hover:border-red-500 transition-all">
-                <img src={img} alt={`${product.name} ${i}`} className="w-full h-full object-cover" />
-              </div>
+              <Thumbnail 
+                key={i} 
+                src={img} 
+                alt={`${product.name} ${i}`} 
+                isActive={activeImage === img}
+                onClick={() => {
+                  setActiveImage(img);
+                  setMainImgError(false);
+                }}
+              />
             ))}
           </div>
         </div>
@@ -107,7 +133,10 @@ const ProductDetail: React.FC = () => {
                 className="w-10 h-10 flex items-center justify-center hover:bg-white rounded-xl transition-all text-xl font-bold"
               >+</button>
             </div>
-            <button className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold h-14 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl shadow-red-200">
+            <button 
+              onClick={() => addToCart(product, quantity)}
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold h-14 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl shadow-red-200"
+            >
               <ShoppingCart className="w-6 h-6" /> Add to Shopping Cart
             </button>
           </div>
@@ -200,6 +229,22 @@ const ProductDetail: React.FC = () => {
           )}
         </div>
       </div>
+    </div>
+  );
+};
+
+const Thumbnail: React.FC<{ src: string; alt: string; isActive: boolean; onClick: () => void }> = ({ src, alt, isActive, onClick }) => {
+  const [error, setError] = useState(false);
+  return (
+    <div 
+      onClick={onClick}
+      className={`aspect-square rounded-2xl overflow-hidden border-2 bg-slate-100 cursor-pointer transition-all flex items-center justify-center ${isActive ? 'border-red-600' : 'border-slate-200 hover:border-red-400'}`}
+    >
+      {error ? (
+        <ImageOff className="w-5 h-5 text-slate-300" />
+      ) : (
+        <img src={src} alt={alt} className="w-full h-full object-cover" onError={() => setError(true)} />
+      )}
     </div>
   );
 };

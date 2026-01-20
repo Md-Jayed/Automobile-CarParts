@@ -3,12 +3,14 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, User, Search, Menu, X, Camera, Car, Settings } from 'lucide-react';
 import { geminiService } from '../services/geminiService';
+import { useCart } from '../context/CartContext';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const navigate = useNavigate();
+  const { totalItems } = useCart();
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +75,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <Link to="/cart" className="relative text-slate-600 hover:text-red-600 transition-colors flex flex-col items-center">
               <ShoppingCart className="w-5 h-5" />
               <span className="text-[10px] font-medium">Cart</span>
-              <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">0</span>
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  {totalItems}
+                </span>
+              )}
             </Link>
             <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? <X /> : <Menu />}
@@ -98,7 +104,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <Link to="/catalog" className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg"><Search className="w-4 h-4 text-slate-400" /> Catalog</Link>
               <Link to="/garage" className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg"><Car className="w-4 h-4 text-slate-400" /> Garage</Link>
               <Link to="/profile" className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg"><User className="w-4 h-4 text-slate-400" /> Account</Link>
-              <Link to="/support" className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg"><Settings className="w-4 h-4 text-slate-400" /> Support</Link>
+              <Link to="/cart" className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg relative">
+                <ShoppingCart className="w-4 h-4 text-slate-400" /> 
+                Cart 
+                {totalItems > 0 && <span className="ml-1 text-red-600 font-bold">({totalItems})</span>}
+              </Link>
             </nav>
         </div>
       )}
